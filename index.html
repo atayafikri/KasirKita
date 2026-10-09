@@ -1,0 +1,2373 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { 
+  ShoppingCart, 
+  Package, 
+  Boxes, 
+  BarChart3, 
+  Settings, 
+  Plus, 
+  Trash2, 
+  Edit, 
+  Search, 
+  Check, 
+  X, 
+  Printer, 
+  TrendingUp, 
+  AlertTriangle, 
+  ArrowRight, 
+  Store, 
+  QrCode, 
+  CreditCard, 
+  Banknote, 
+  Download, 
+  Share2, 
+  LogOut, 
+  User, 
+  Sparkles, 
+  Zap, 
+  ShieldCheck, 
+  Clock, 
+  RefreshCw, 
+  CheckCircle2, 
+  ChevronRight,
+  Filter,
+  DollarSign,
+  PieChart,
+  Calendar,
+  Layers,
+  PhoneCall
+} from 'lucide-react';
+
+const BrutalStyles = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;900&family=Plus+Jakarta+Sans:wght@600;800&display=swap');
+    
+    body {
+      font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+      background-color: #FFFDF5;
+      color: #000000;
+    }
+
+    .neo-box {
+      border: 3px solid #000000;
+      box-shadow: 5px 5px 0px 0px #000000;
+    }
+
+    .neo-box-sm {
+      border: 2px solid #000000;
+      box-shadow: 3px 3px 0px 0px #000000;
+    }
+
+    .neo-box-lg {
+      border: 4px solid #000000;
+      box-shadow: 8px 8px 0px 0px #000000;
+    }
+
+    .neo-btn {
+      border: 3px solid #000000;
+      box-shadow: 4px 4px 0px 0px #000000;
+      transition: all 0.1s ease-in-out;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .neo-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px 0px #000000;
+    }
+
+    .neo-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: 1px 1px 0px 0px #000000;
+    }
+
+    .neo-input {
+      border: 3px solid #000000;
+      box-shadow: 3px 3px 0px 0px #000000;
+      outline: none;
+    }
+
+    .neo-input:focus {
+      box-shadow: 5px 5px 0px 0px #000000;
+      background-color: #FFFFFF;
+    }
+
+    /* Custom Scrollbar for Neo Brutalism */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #FFFDF5;
+      border-left: 2px solid #000;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #FFDE59;
+      border: 2px solid #000;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #FF5757;
+    }
+  `}</style>
+);
+
+const INITIAL_PRODUCTS = [
+  { id: '1', name: 'Kopi Susu Gula Aren', category: 'Beverages', price: 18000, cost: 7000, stock: 45, threshold: 10, sku: 'DRK-001', icon: '☕', color: 'bg-[#FFDE59]' },
+  { id: '2', name: 'Roti Bakar Cokelat Keju', category: 'Snacks', price: 22000, cost: 9000, stock: 20, threshold: 5, sku: 'SNK-001', icon: '🍞', color: 'bg-[#FF99C8]' },
+  { id: '3', name: 'Nasi Goreng Spesial KasirKita', category: 'Main Dish', price: 28000, cost: 12000, stock: 15, threshold: 8, sku: 'FD-001', icon: '🍳', color: 'bg-[#00E5FF]' },
+  { id: '4', name: 'Es Teh Manis Jumbo', category: 'Beverages', price: 7000, cost: 2000, stock: 120, threshold: 25, sku: 'DRK-002', icon: '🥤', color: 'bg-[#00F5D4]' },
+  { id: '5', name: 'Indomie Goreng Telur', category: 'Main Dish', price: 15000, cost: 6000, stock: 4, threshold: 10, sku: 'FD-002', icon: '🍜', color: 'bg-[#FF5757]' }, // Low stock item
+  { id: '6', name: 'Dimsum Ayam (4 pcs)', category: 'Snacks', price: 20000, cost: 9500, stock: 18, threshold: 5, sku: 'SNK-002', icon: '🥟', color: 'bg-[#B8FF66]' },
+  { id: '7', name: 'Matcha Latte Ice', category: 'Beverages', price: 24000, cost: 10000, stock: 30, threshold: 8, sku: 'DRK-003', icon: '🍵', color: 'bg-[#B8FF66]' },
+  { id: '8', name: 'Kentang Goreng Keju', category: 'Snacks', price: 16000, cost: 6500, stock: 3, threshold: 8, sku: 'SNK-003', icon: '🍟', color: 'bg-[#FFDE59]' }, // Low stock item
+  { id: '9', name: 'Paket Hemat Kopi + Roti', category: 'Bundles', price: 35000, cost: 15000, stock: 25, threshold: 5, sku: 'BND-001', icon: '🎁', color: 'bg-[#D8B4F8]' },
+];
+
+const INITIAL_TRANSACTIONS = [
+  {
+    id: 'TRX-9821',
+    date: new Date(Date.now() - 3600000 * 2).toISOString(),
+    items: [
+      { id: '1', name: 'Kopi Susu Gula Aren', price: 18000, quantity: 2 },
+      { id: '2', name: 'Roti Bakar Cokelat Keju', price: 22000, quantity: 1 }
+    ],
+    subtotal: 58000,
+    tax: 5800,
+    discount: 0,
+    total: 63800,
+    paymentMethod: 'QRIS',
+    cashier: 'Budi Santoso'
+  },
+  {
+    id: 'TRX-9822',
+    date: new Date(Date.now() - 3600000 * 5).toISOString(),
+    items: [
+      { id: '3', name: 'Nasi Goreng Spesial KasirKita', price: 28000, quantity: 1 },
+      { id: '4', name: 'Es Teh Manis Jumbo', price: 7000, quantity: 1 }
+    ],
+    subtotal: 35000,
+    tax: 3500,
+    discount: 3500,
+    total: 35000,
+    paymentMethod: 'Cash',
+    cashier: 'Budi Santoso'
+  },
+  {
+    id: 'TRX-9823',
+    date: new Date(Date.now() - 3600000 * 24).toISOString(),
+    items: [
+      { id: '9', name: 'Paket Hemat Kopi + Roti', price: 35000, quantity: 3 }
+    ],
+    subtotal: 105000,
+    tax: 10500,
+    discount: 5000,
+    total: 110500,
+    paymentMethod: 'Card',
+    cashier: 'Siti Aminah'
+  }
+];
+
+// Formatting Helper Functions
+const formatRp = (amount) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 0
+  }).format(amount);
+};
+
+const formatDate = (isoString) => {
+  const d = new Date(isoString);
+  return d.toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+const NeoButton = ({ children, onClick, variant = 'yellow', className = '', type = 'button', disabled = false }) => {
+  const variants = {
+    yellow: 'bg-[#FFDE59] text-black hover:bg-[#FFE580]',
+    cyan: 'bg-[#00E5FF] text-black hover:bg-[#5CE1E6]',
+    pink: 'bg-[#FF99C8] text-black hover:bg-[#FFB7D5]',
+    mint: 'bg-[#00F5D4] text-black hover:bg-[#52FFE4]',
+    red: 'bg-[#FF5757] text-white hover:bg-[#FF7575]',
+    purple: 'bg-[#D8B4F8] text-black hover:bg-[#E5CBFA]',
+    white: 'bg-white text-black hover:bg-gray-100',
+    black: 'bg-black text-white hover:bg-gray-800'
+  };
+
+  return (
+    <button
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      className={`neo-btn px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm sm:text-base font-bold select-none ${variants[variant] || variants.yellow} ${disabled ? 'opacity-50 cursor-not-allowed transform-none shadow-none' : ''} ${className}`}
+    >
+      {children}
+    </button>
+  );
+};
+
+const NeoCard = ({ children, className = '', bg = 'bg-white', colorBorder = 'border-black' }) => (
+  <div className={`neo-box ${bg} ${colorBorder} rounded-xl p-4 sm:p-6 relative transition-all`}>
+    {children}
+  </div>
+);
+
+const NeoBadge = ({ text, color = 'bg-[#FFDE59]' }) => (
+  <span className={`px-2.5 py-0.5 border-2 border-black rounded-md font-bold text-xs uppercase tracking-wider ${color}`}>
+    {text}
+  </span>
+);
+
+export default function App() {
+  // Navigation View: 'landing' | 'pos' | 'products' | 'inventory' | 'reports' | 'settings'
+  const [currentView, setCurrentView] = useState('landing');
+  
+  // App Data States
+  const [products, setProducts] = useState(INITIAL_PRODUCTS);
+  const [cart, setCart] = useState([]);
+  const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
+  const [stockLogs, setStockLogs] = useState([
+    { id: 1, date: new Date().toISOString(), productName: 'Indomie Goreng Telur', change: -2, reason: 'Sale #TRX-9822' },
+    { id: 2, date: new Date().toISOString(), productName: 'Kentang Goreng Keju', change: +20, reason: 'Manual Restock' }
+  ]);
+
+  // Auth & Store Settings State
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // Default logged in for smooth demo access
+  const [user, setUser] = useState({ name: 'Budi Santoso', storeName: 'Kedai Kopi Kita', role: 'Owner / Admin' });
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
+
+  // Store Configuration
+  const [storeConfig, setStoreConfig] = useState({
+    name: 'Kedai Kopi & Toast Kita',
+    address: 'Jl. Senopati No. 42, Kebayoran Baru, Jakarta Selatan',
+    phone: '0812-3456-7890',
+    taxRate: 10, // 10%
+    receiptFooter: 'Terima kasih telah berbelanja di KasirKita!'
+  });
+
+  // POS State
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [taxEnabled, setTaxEnabled] = useState(true);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('QRIS');
+  const [cashGiven, setCashGiven] = useState('');
+  const [lastCompletedTransaction, setLastCompletedTransaction] = useState(null);
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
+
+  // Notification Toast
+  const [toastMessage, setToastMessage] = useState(null);
+
+  const showToast = (msg, type = 'info') => {
+    setToastMessage({ msg, type });
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // Low stock products counter
+  const lowStockItems = useMemo(() => {
+    return products.filter(p => p.stock <= p.threshold);
+  }, [products]);
+
+  const addToCart = (product) => {
+    if (product.stock <= 0) {
+      showToast(`Stok ${product.name} telah habis!`, 'error');
+      return;
+    }
+
+    setCart(prevCart => {
+      const existing = prevCart.find(item => item.id === product.id);
+      if (existing) {
+        if (existing.quantity >= product.stock) {
+          showToast(`Jumlah melebihi stok yang tersedia (${product.stock})`, 'error');
+          return prevCart;
+        }
+        return prevCart.map(item =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      return [...prevCart, { ...product, quantity: 1 }];
+    });
+  };
+
+  const updateCartQuantity = (productId, delta) => {
+    setCart(prevCart => {
+      return prevCart.map(item => {
+        if (item.id === productId) {
+          const targetProduct = products.find(p => p.id === productId);
+          const newQty = item.quantity + delta;
+          if (newQty <= 0) return null;
+          if (targetProduct && newQty > targetProduct.stock) {
+            showToast(`Maksimal stok tercapai (${targetProduct.stock})`, 'error');
+            return item;
+          }
+          return { ...item, quantity: newQty };
+        }
+        return item;
+      }).filter(Boolean);
+    });
+  };
+
+  const removeFromCart = (productId) => {
+    setCart(prevCart => prevCart.filter(item => item.id !== productId));
+  };
+
+  const clearCart = () => setCart([]);
+
+  // Calculate Subtotal, Tax, Discount & Total
+  const cartSubtotal = useMemo(() => {
+    return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  }, [cart]);
+
+  const discountAmount = useMemo(() => {
+    return Math.round((cartSubtotal * discountPercent) / 100);
+  }, [cartSubtotal, discountPercent]);
+
+  const taxAmount = useMemo(() => {
+    if (!taxEnabled) return 0;
+    return Math.round(((cartSubtotal - discountAmount) * storeConfig.taxRate) / 100);
+  }, [cartSubtotal, discountAmount, taxEnabled, storeConfig.taxRate]);
+
+  const cartTotal = useMemo(() => {
+    return Math.max(0, cartSubtotal - discountAmount + taxAmount);
+  }, [cartSubtotal, discountAmount, taxAmount]);
+
+  const processCheckout = () => {
+    if (cart.length === 0) return;
+
+    if (selectedPaymentMethod === 'Cash') {
+      const numCash = parseFloat(cashGiven) || 0;
+      if (numCash < cartTotal) {
+        showToast('Jumlah uang tunai kurang!', 'error');
+        return;
+      }
+    }
+
+    // Generate Transaction Record
+    const newTrx = {
+      id: `TRX-${Math.floor(1000 + Math.random() * 9000)}`,
+      date: new Date().toISOString(),
+      items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
+      subtotal: cartSubtotal,
+      discount: discountAmount,
+      tax: taxAmount,
+      total: cartTotal,
+      paymentMethod: selectedPaymentMethod,
+      cashGiven: selectedPaymentMethod === 'Cash' ? parseFloat(cashGiven) : cartTotal,
+      change: selectedPaymentMethod === 'Cash' ? (parseFloat(cashGiven) - cartTotal) : 0,
+      cashier: user.name
+    };
+
+    // Deduct inventory stock
+    setProducts(prevProducts => {
+      return prevProducts.map(prod => {
+        const cartItem = cart.find(ci => ci.id === prod.id);
+        if (cartItem) {
+          const updatedStock = prod.stock - cartItem.quantity;
+          return { ...prod, stock: Math.max(0, updatedStock) };
+        }
+        return prod;
+      });
+    });
+
+    // Record stock logs
+    cart.forEach(item => {
+      setStockLogs(prev => [
+        {
+          id: Date.now() + Math.random(),
+          date: new Date().toISOString(),
+          productName: item.name,
+          change: -item.quantity,
+          reason: `Penjualan #${newTrx.id}`
+        },
+        ...prev
+      ]);
+    });
+
+    // Record transaction
+    setTransactions(prev => [newTrx, ...prev]);
+    setLastCompletedTransaction(newTrx);
+    
+    // Reset state & show receipt modal
+    setCart([]);
+    setPaymentModalOpen(false);
+    setCashGiven('');
+    setDiscountPercent(0);
+    setReceiptModalOpen(true);
+    showToast('Transaksi Berhasil Disimpan!', 'success');
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-[#FFFDF5] text-black">
+      <BrutalStyles />
+
+      {/* Global Toast Alert */}
+      {toastMessage && (
+        <div className="fixed top-5 right-5 z-50 animate-bounce">
+          <div className={`neo-box px-5 py-3 rounded-lg font-bold text-sm shadow-xl flex items-center gap-3 ${toastMessage.type === 'error' ? 'bg-[#FF5757] text-white' : 'bg-[#00F5D4] text-black'}`}>
+            {toastMessage.type === 'error' ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+            {toastMessage.msg}
+          </div>
+        </div>
+      )}
+
+      {/* Main Header / Top Navigation */}
+      <header className="border-b-4 border-black bg-[#FFDE59] sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+          
+          {/* Logo & Brand */}
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setCurrentView('landing')}>
+            <div className="neo-box-sm bg-[#00E5FF] p-2 rounded-lg transform -rotate-3">
+              <Store className="w-6 h-6 text-black" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-none">
+                Kasir<span className="text-[#FF5757]">Kita</span>
+              </h1>
+              <p className="text-[10px] font-bold uppercase tracking-widest bg-black text-white px-1.5 py-0.5 rounded mt-0.5 inline-block">
+                POS Neo-Brutalist
+              </p>
+            </div>
+          </div>
+
+          {/* Navigation Tabs (When logged in) */}
+          <div className="hidden md:flex items-center gap-2">
+            <button
+              onClick={() => setCurrentView('landing')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-bold border-2 border-black transition-all ${currentView === 'landing' ? 'bg-black text-white shadow-[2px_2px_0px_0px_#000]' : 'bg-white text-black hover:bg-gray-100'}`}
+            >
+              Marketing
+            </button>
+            
+            <button
+              onClick={() => setCurrentView('pos')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-bold border-2 border-black flex items-center gap-1.5 transition-all ${currentView === 'pos' ? 'bg-black text-white shadow-[2px_2px_0px_0px_#000]' : 'bg-[#00E5FF] text-black hover:bg-opacity-80'}`}
+            >
+              <ShoppingCart className="w-4 h-4" /> Kasir POS
+            </button>
+
+            <button
+              onClick={() => setCurrentView('products')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-bold border-2 border-black flex items-center gap-1.5 transition-all ${currentView === 'products' ? 'bg-black text-white shadow-[2px_2px_0px_0px_#000]' : 'bg-white text-black hover:bg-gray-100'}`}
+            >
+              <Package className="w-4 h-4" /> Katalog
+            </button>
+
+            <button
+              onClick={() => setCurrentView('inventory')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-bold border-2 border-black flex items-center gap-1.5 relative transition-all ${currentView === 'inventory' ? 'bg-black text-white shadow-[2px_2px_0px_0px_#000]' : 'bg-white text-black hover:bg-gray-100'}`}
+            >
+              <Boxes className="w-4 h-4" /> Stok
+              {lowStockItems.length > 0 && (
+                <span className="bg-[#FF5757] text-white text-[10px] px-1.5 py-0.2 rounded-full font-black border border-black">
+                  {lowStockItems.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setCurrentView('reports')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-bold border-2 border-black flex items-center gap-1.5 transition-all ${currentView === 'reports' ? 'bg-black text-white shadow-[2px_2px_0px_0px_#000]' : 'bg-white text-black hover:bg-gray-100'}`}
+            >
+              <BarChart3 className="w-4 h-4" /> Laporan
+            </button>
+          </div>
+
+          {/* User Profile & Actions */}
+          <div className="flex items-center gap-3">
+            {isLoggedIn ? (
+              <div className="flex items-center gap-2">
+                <div className="hidden sm:block text-right">
+                  <div className="font-bold text-xs leading-none">{storeConfig.name}</div>
+                  <div className="text-[11px] font-semibold text-gray-700">{user.name}</div>
+                </div>
+                <NeoButton
+                  onClick={() => setCurrentView('settings')}
+                  variant="purple"
+                  className="!p-2 text-xs"
+                >
+                  <Settings className="w-4 h-4" />
+                </NeoButton>
+              </div>
+            ) : (
+              <NeoButton
+                onClick={() => { setAuthMode('login'); setAuthModalOpen(true); }}
+                variant="black"
+                className="text-xs sm:text-sm"
+              >
+                Masuk / Daftar
+              </NeoButton>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Navigation Row */}
+        <div className="md:hidden flex overflow-x-auto border-t-2 border-black bg-white p-2 gap-2 text-xs font-bold scrollbar-none">
+          <button onClick={() => setCurrentView('landing')} className={`px-3 py-1.5 rounded border-2 border-black shrink-0 ${currentView === 'landing' ? 'bg-black text-white' : 'bg-gray-100'}`}>Beranda</button>
+          <button onClick={() => setCurrentView('pos')} className={`px-3 py-1.5 rounded border-2 border-black shrink-0 flex items-center gap-1 ${currentView === 'pos' ? 'bg-[#00E5FF]' : 'bg-gray-100'}`}><ShoppingCart className="w-3.5 h-3.5" /> POS</button>
+          <button onClick={() => setCurrentView('products')} className={`px-3 py-1.5 rounded border-2 border-black shrink-0 ${currentView === 'products' ? 'bg-black text-white' : 'bg-gray-100'}`}>Produk</button>
+          <button onClick={() => setCurrentView('inventory')} className={`px-3 py-1.5 rounded border-2 border-black shrink-0 ${currentView === 'inventory' ? 'bg-black text-white' : 'bg-gray-100'}`}>Stok ({lowStockItems.length})</button>
+          <button onClick={() => setCurrentView('reports')} className={`px-3 py-1.5 rounded border-2 border-black shrink-0 ${currentView === 'reports' ? 'bg-black text-white' : 'bg-gray-100'}`}>Laporan</button>
+        </div>
+      </header>
+
+      {/* Main App Content View Switcher */}
+      <main className="flex-1">
+        {currentView === 'landing' && (
+          <LandingPageView 
+            onLaunchApp={() => setCurrentView('pos')}
+            onOpenAuth={(mode) => { setAuthMode(mode); setAuthModalOpen(true); }}
+          />
+        )}
+
+        {currentView === 'pos' && (
+          <POSCheckoutView
+            products={products}
+            cart={cart}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            addToCart={addToCart}
+            updateCartQuantity={updateCartQuantity}
+            removeFromCart={removeFromCart}
+            clearCart={clearCart}
+            cartSubtotal={cartSubtotal}
+            cartTotal={cartTotal}
+            discountPercent={discountPercent}
+            setDiscountPercent={setDiscountPercent}
+            taxEnabled={taxEnabled}
+            setTaxEnabled={setTaxEnabled}
+            taxAmount={taxAmount}
+            discountAmount={discountAmount}
+            storeConfig={storeConfig}
+            onOpenPayment={() => setPaymentModalOpen(true)}
+            lowStockCount={lowStockItems.length}
+          />
+        )}
+
+        {currentView === 'products' && (
+          <ProductManagementView
+            products={products}
+            setProducts={setProducts}
+            showToast={showToast}
+          />
+        )}
+
+        {currentView === 'inventory' && (
+          <InventoryManagementView
+            products={products}
+            setProducts={setProducts}
+            stockLogs={stockLogs}
+            setStockLogs={setStockLogs}
+            showToast={showToast}
+          />
+        )}
+
+        {currentView === 'reports' && (
+          <ReportsAnalyticsView
+            transactions={transactions}
+            products={products}
+            storeConfig={storeConfig}
+          />
+        )}
+
+        {currentView === 'settings' && (
+          <SettingsView
+            storeConfig={storeConfig}
+            setStoreConfig={setStoreConfig}
+            user={user}
+            setUser={setUser}
+            showToast={showToast}
+          />
+        )}
+      </main>
+
+      {/* Payment Processing Modal */}
+      {paymentModalOpen && (
+        <PaymentModal
+          total={cartTotal}
+          subtotal={cartSubtotal}
+          taxAmount={taxAmount}
+          discountAmount={discountAmount}
+          selectedMethod={selectedPaymentMethod}
+          setSelectedMethod={setSelectedPaymentMethod}
+          cashGiven={cashGiven}
+          setCashGiven={setCashGiven}
+          onClose={() => setPaymentModalOpen(false)}
+          onConfirmPayment={processCheckout}
+        />
+      )}
+
+      {/* Thermal Receipt Preview Modal */}
+      {receiptModalOpen && lastCompletedTransaction && (
+        <ReceiptModal
+          transaction={lastCompletedTransaction}
+          storeConfig={storeConfig}
+          onClose={() => setReceiptModalOpen(false)}
+          showToast={showToast}
+        />
+      )}
+
+      {/* Authentication Modal */}
+      {authModalOpen && (
+        <AuthModal
+          mode={authMode}
+          setMode={setAuthMode}
+          onClose={() => setAuthModalOpen(false)}
+          onLoginSuccess={(userData) => {
+            setIsLoggedIn(true);
+            setUser(userData);
+            setAuthModalOpen(false);
+            showToast(`Selamat datang kembali, ${userData.name}!`, 'success');
+            setCurrentView('pos');
+          }}
+        />
+      )}
+
+      {/* Footer */}
+      <footer className="border-t-4 border-black bg-black text-white py-6 mt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className="bg-[#FFDE59] text-black font-black px-2 py-1 rounded text-xs">
+              KasirKita v2.5
+            </div>
+            <p className="text-xs text-gray-400">
+              Application POS & Inventaris Modern UMKM Indonesia. Neo-Brutalist Edition.
+            </p>
+          </div>
+          <div className="flex items-center gap-4 text-xs text-gray-300 font-medium">
+            <span className="hover:text-white cursor-pointer" onClick={() => setCurrentView('landing')}>Home</span>
+            <span>•</span>
+            <span className="hover:text-white cursor-pointer" onClick={() => setCurrentView('pos')}>POS Dashboard</span>
+            <span>•</span>
+            <span className="text-[#00F5D4] flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#00F5D4] inline-block animate-ping"></span> Sistem Aktif</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function LandingPageView({ onLaunchApp, onOpenAuth }) {
+  return (
+    <div className="space-y-16 pb-12">
+      {/* Hero Section */}
+      <section className="bg-[#FFDE59] border-b-4 border-black pt-12 pb-16 px-4 sm:px-6 relative overflow-hidden">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          
+          <div className="lg:col-span-7 space-y-6">
+            <div className="inline-flex items-center gap-2 bg-black text-white px-3 py-1 rounded-full text-xs font-bold border-2 border-black">
+              <Sparkles className="w-4 h-4 text-[#00E5FF]" /> POS Khusus UMKM Serba Cepat
+            </div>
+            
+            <h1 className="text-4xl sm:text-6xl font-black leading-tight tracking-tight">
+              Kelola Usaha <br />
+              <span className="bg-[#00E5FF] px-3 py-0.5 border-3 border-black inline-block transform -rotate-1 shadow-[4px_4px_0px_0px_#000]">
+                Tanpa Ribet!
+              </span>
+            </h1>
+
+            <p className="text-lg sm:text-xl font-bold text-black/90 max-w-xl">
+              Aplikasi Kasir (POS), Manajemen Stok, dan Laporan Keuangan Real-Time dengan tampilan Neo-Brutalist yang tajam, cepat, dan intuitif.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <NeoButton onClick={onLaunchApp} variant="black" className="!text-lg !px-6 !py-3">
+                Coba Demo POS Sekarang <ArrowRight className="w-5 h-5 ml-1" />
+              </NeoButton>
+              <NeoButton onClick={() => onOpenAuth('signup')} variant="white" className="!text-lg !px-6 !py-3">
+                Daftar Gratis
+              </NeoButton>
+            </div>
+
+            {/* Quick Badges */}
+            <div className="pt-4 flex flex-wrap items-center gap-6 text-xs font-bold">
+              <div className="flex items-center gap-1.5"><Check className="w-4 h-4 text-black bg-white rounded border border-black" /> Tanpa Biaya Tersembunyi</div>
+              <div className="flex items-center gap-1.5"><Check className="w-4 h-4 text-black bg-white rounded border border-black" /> Mendukung QRIS All Payment</div>
+              <div className="flex items-center gap-1.5"><Check className="w-4 h-4 text-black bg-white rounded border border-black" /> Cetak Struk Bluetooth / WA</div>
+            </div>
+          </div>
+
+          {/* Hero Visual Mockup */}
+          <div className="lg:col-span-5 relative">
+            <div className="neo-box-lg bg-white rounded-2xl p-4 sm:p-6 space-y-4 transform rotate-1 hover:rotate-0 transition-transform">
+              <div className="flex items-center justify-between border-b-2 border-black pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-[#FF5757] border border-black"></div>
+                  <div className="w-3 h-3 rounded-full bg-[#FFDE59] border border-black"></div>
+                  <div className="w-3 h-3 rounded-full bg-[#00F5D4] border border-black"></div>
+                </div>
+                <span className="font-bold text-xs bg-black text-white px-2 py-0.5 rounded">POS LIVE PREVIEW</span>
+              </div>
+
+              {/* Mockup Cart Preview */}
+              <div className="space-y-2">
+                <div className="bg-[#FFFDF5] border-2 border-black p-2.5 rounded-lg flex justify-between items-center text-sm font-bold">
+                  <span>☕ Kopi Susu Gula Aren (x2)</span>
+                  <span className="bg-[#00E5FF] px-2 py-0.5 rounded border border-black">Rp 36.000</span>
+                </div>
+                <div className="bg-[#FFFDF5] border-2 border-black p-2.5 rounded-lg flex justify-between items-center text-sm font-bold">
+                  <span>🍞 Roti Bakar Cokelat (x1)</span>
+                  <span className="bg-[#00E5FF] px-2 py-0.5 rounded border border-black">Rp 22.000</span>
+                </div>
+              </div>
+
+              <div className="bg-[#00F5D4] border-3 border-black p-4 rounded-xl flex items-center justify-between font-black text-lg">
+                <span>TOTAL TRANSAKSI</span>
+                <span className="text-2xl">Rp 58.000</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={onLaunchApp} className="neo-btn bg-[#FF5757] text-white py-2 text-center rounded font-bold text-xs">
+                  ⚡ BAYAR QRIS
+                </button>
+                <button onClick={onLaunchApp} className="neo-btn bg-[#FFDE59] text-black py-2 text-center rounded font-bold text-xs">
+                  💵 TUNAI EXACT
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* Target Audience & Pain Points Solver */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
+        <div className="text-center space-y-2">
+          <NeoBadge text="Solusi Masalah UMKM" color="bg-[#FF99C8]" />
+          <h2 className="text-3xl sm:text-4xl font-black">Mengapa Memilih KasirKita?</h2>
+          <p className="text-gray-700 font-bold max-w-xl mx-auto text-sm sm:text-base">
+            Didesain khusus untuk pemilik Toko Kelontong, Kedai Kopi, Food Truck, Warung Makan, dan Retail Mandiri.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <NeoCard bg="bg-[#00E5FF]">
+            <div className="w-12 h-12 bg-white border-3 border-black rounded-xl flex items-center justify-between p-2.5 mb-4 font-black text-2xl">
+              🚀
+            </div>
+            <h3 className="text-xl font-black mb-2">Kasir Super Cepat</h3>
+            <p className="text-sm font-bold text-black/80">
+              Proses checkout kurang dari 5 detik! Cari produk instan, hitung kembalian otomatis, dan cetak struk tanpa komplikasi.
+            </p>
+          </NeoCard>
+
+          <NeoCard bg="bg-[#FF99C8]">
+            <div className="w-12 h-12 bg-white border-3 border-black rounded-xl flex items-center justify-between p-2.5 mb-4 font-black text-2xl">
+              📦
+            </div>
+            <h3 className="text-xl font-black mb-2">Stok Otomatis Deduct</h3>
+            <p className="text-sm font-bold text-black/80">
+              Stok produk berkurang otomatis tiap ada transaksi. Dilengkapi notifikasi peringatan jika stok menipis!
+            </p>
+          </NeoCard>
+
+          <NeoCard bg="bg-[#B8FF66]">
+            <div className="w-12 h-12 bg-white border-3 border-black rounded-xl flex items-center justify-between p-2.5 mb-4 font-black text-2xl">
+              📊
+            </div>
+            <h3 className="text-xl font-black mb-2">Laporan Omset Jelas</h3>
+            <p className="text-sm font-bold text-black/80">
+              Pantau grafik penjualan harian, mingguan, dan item terlaris langsung dari HP atau Laptop tanpa pusing rumus Excel.
+            </p>
+          </NeoCard>
+        </div>
+      </section>
+
+      {/* Feature Pillars Showcase */}
+      <section className="bg-white border-y-4 border-black py-16 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto space-y-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <NeoBadge text="Fitur Utama" color="bg-[#00F5D4]" />
+              <h2 className="text-3xl sm:text-5xl font-black mt-2">Segala Yang Anda Butuhkan</h2>
+            </div>
+            <NeoButton onClick={onLaunchApp} variant="yellow">
+              Buka Aplikasi Kasir
+            </NeoButton>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="neo-box bg-[#FFFDF5] p-6 rounded-2xl space-y-4 border-4 border-black">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-[#FFDE59] rounded-xl border-2 border-black">
+                  <ShoppingCart className="w-6 h-6 text-black" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-black">1. Transaksi Penjualan (POS)</h4>
+                  <p className="text-xs font-bold text-gray-600">Checkout Fleksibel & Multi Payment</p>
+                </div>
+              </div>
+              <ul className="space-y-2 text-sm font-bold text-gray-800">
+                <li className="flex items-center gap-2"><span className="text-[#FF5757]">✔</span> Metode Tunai, QRIS E-Wallet, & Kartu Debit</li>
+                <li className="flex items-center gap-2"><span className="text-[#FF5757]">✔</span> Kalkulasi Pajak % & Diskon Transaksi Otomatis</li>
+                <li className="flex items-center gap-2"><span className="text-[#FF5757]">✔</span> Struk Termal Printable & Kirim Struk via WhatsApp</li>
+              </ul>
+            </div>
+
+            <div className="neo-box bg-[#FFFDF5] p-6 rounded-2xl space-y-4 border-4 border-black">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-[#00E5FF] rounded-xl border-2 border-black">
+                  <Boxes className="w-6 h-6 text-black" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-black">2. Manajemen Stok & Inventaris</h4>
+                  <p className="text-xs font-bold text-gray-600">Kontrol Barang & Alert Restock</p>
+                </div>
+              </div>
+              <ul className="space-y-2 text-sm font-bold text-gray-800">
+                <li className="flex items-center gap-2"><span className="text-[#00E5FF]">✔</span> Peringatan Warna Kuning/Merah saat Stok Hampir Habis</li>
+                <li className="flex items-center gap-2"><span className="text-[#00E5FF]">✔</span> Log Riwayat Penambahan & Penyesuaian Barang Rusak</li>
+                <li className="flex items-center gap-2"><span className="text-[#00E5FF]">✔</span> Kategorisasi Produk dengan Tag Warna Menarik</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Table Section */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
+        <div className="text-center space-y-2">
+          <NeoBadge text="Paket Harga Transparan" color="bg-[#FFDE59]" />
+          <h2 className="text-3xl sm:text-4xl font-black">Pilih Paket Sesuai Skala Bisnis</h2>
+          <p className="text-gray-700 font-bold text-sm">Tidak ada biaya tersembunyi. Batalkan kapan saja.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+          
+          {/* Starter Plan */}
+          <NeoCard bg="bg-white" className="flex flex-col justify-between">
+            <div className="space-y-4">
+              <NeoBadge text="UMKM Pemula" color="bg-gray-200" />
+              <h3 className="text-2xl font-black">Gratis Selamanya</h3>
+              <div className="text-3xl font-black">Rp 0 <span className="text-xs font-bold text-gray-500">/ bulan</span></div>
+              <ul className="space-y-2 text-xs font-bold pt-2 border-t-2 border-black">
+                <li>✅ Hingga 50 Produk Katalog</li>
+                <li>✅ Kasir POS Standar</li>
+                <li>✅ Laporan Penjualan Harian</li>
+                <li>✅ 1 Akun Kasir</li>
+              </ul>
+            </div>
+            <NeoButton onClick={() => onOpenAuth('signup')} variant="white" className="w-full mt-6">
+              Mulai Gratis
+            </NeoButton>
+          </NeoCard>
+
+          {/* Pro Business Plan (Featured) */}
+          <NeoCard bg="bg-[#FFDE59]" className="flex flex-col justify-between relative transform md:-translate-y-2">
+            <div className="absolute -top-4 right-4 bg-[#FF5757] text-white border-2 border-black px-3 py-0.5 rounded-full text-xs font-black uppercase">
+              Paling Populer
+            </div>
+            <div className="space-y-4">
+              <NeoBadge text="UMKM Pro" color="bg-black text-white" />
+              <h3 className="text-2xl font-black">Pro Business</h3>
+              <div className="text-3xl font-black">Rp 49.000 <span className="text-xs font-bold text-black/70">/ bulan</span></div>
+              <ul className="space-y-2 text-xs font-bold pt-2 border-t-2 border-black">
+                <li>✅ Produk Katalog Unlimited</li>
+                <li>✅ Peringatan Stok Menipis Realtime</li>
+                <li>✅ Kirim Struk WhatsApp Direct</li>
+                <li>✅ Laporan Analisis Grafik Lengkap</li>
+                <li>✅ Multi Payment QRIS, Cash & Card</li>
+              </ul>
+            </div>
+            <NeoButton onClick={onLaunchApp} variant="black" className="w-full mt-6">
+              Coba Bebas Pro 14 Hari
+            </NeoButton>
+          </NeoCard>
+
+          {/* Enterprise Plan */}
+          <NeoCard bg="bg-white" className="flex flex-col justify-between">
+            <div className="space-y-4">
+              <NeoBadge text="Multi Cabang" color="bg-[#D8B4F8]" />
+              <h3 className="text-2xl font-black">Enterprise</h3>
+              <div className="text-3xl font-black">Rp 129.000 <span className="text-xs font-bold text-gray-500">/ bulan</span></div>
+              <ul className="space-y-2 text-xs font-bold pt-2 border-t-2 border-black">
+                <li>✅ Semua Fitur Paket Pro</li>
+                <li>✅ Multi Cabang Store Management</li>
+                <li>✅ Role Akses Pegawai vs Owner</li>
+                <li>✅ Export Data Laporan CSV/PDF</li>
+                <li>✅ Dukungan Prioritas WhatsApp 24/7</li>
+              </ul>
+            </div>
+            <NeoButton onClick={() => onOpenAuth('signup')} variant="purple" className="w-full mt-6">
+              Hubungi Tim Sales
+            </NeoButton>
+          </NeoCard>
+
+        </div>
+      </section>
+
+      {/* CTA Footer Banner */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="neo-box-lg bg-[#00E5FF] rounded-3xl p-8 sm:p-12 text-center space-y-6">
+          <h2 className="text-3xl sm:text-5xl font-black">Siap Menyiapkan Kasir Modern Anda?</h2>
+          <p className="text-base sm:text-lg font-bold max-w-2xl mx-auto">
+            Gunakan KasirKita sekarang juga. Tanpa perlu download installer rumit, langsung berjalan di browser HP, Tablet, atau Laptop Anda.
+          </p>
+          <div className="flex justify-center gap-4">
+            <NeoButton onClick={onLaunchApp} variant="black" className="!text-lg !px-8 !py-3">
+              Mulai Pakai POS Sekarang 🚀
+            </NeoButton>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function POSCheckoutView({
+  products,
+  cart,
+  selectedCategory,
+  setSelectedCategory,
+  searchQuery,
+  setSearchQuery,
+  addToCart,
+  updateCartQuantity,
+  removeFromCart,
+  clearCart,
+  cartSubtotal,
+  cartTotal,
+  discountPercent,
+  setDiscountPercent,
+  taxEnabled,
+  setTaxEnabled,
+  taxAmount,
+  discountAmount,
+  storeConfig,
+  onOpenPayment,
+  lowStockCount
+}) {
+  const categories = ['All', 'Beverages', 'Main Dish', 'Snacks', 'Bundles'];
+
+  const filteredProducts = products.filter(p => {
+    const matchesCat = selectedCategory === 'All' || p.category === selectedCategory;
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.sku.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCat && matchesSearch;
+  });
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      
+      {/* Top Banner Warning for Low Stock */}
+      {lowStockCount > 0 && (
+        <div className="mb-6 neo-box bg-[#FFDE59] p-3 rounded-xl flex items-center justify-between text-xs sm:text-sm font-bold">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-black shrink-0" />
+            <span>Peringatan Stok: Terdapat {lowStockCount} produk yang persediaannya menipis!</span>
+          </div>
+          <span className="underline cursor-pointer" onClick={() => window.scrollTo(0, 0)}>Periksa Stok</span>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* Left Side: Product Grid & Filters (7 Cols) */}
+        <div className="lg:col-span-7 space-y-4">
+          
+          {/* Search & Barcode Simulator */}
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="w-5 h-5 absolute left-3 top-3 text-gray-500" />
+              <input
+                type="text"
+                placeholder="Cari nama produk / SKU (cth: Kopi, DRK-001)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="neo-input w-full pl-10 pr-4 py-2.5 rounded-xl font-bold text-sm bg-white"
+              />
+            </div>
+          </div>
+
+          {/* Category Filter Pills */}
+          <div className="flex overflow-x-auto gap-2 pb-1 scrollbar-none">
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black border-2 border-black whitespace-nowrap transition-all ${
+                  selectedCategory === cat
+                    ? 'bg-black text-white shadow-[3px_3px_0px_0px_#00E5FF]'
+                    : 'bg-white text-black hover:bg-gray-100'
+                }`}
+              >
+                {cat === 'All' ? '🌟 Semua Produk' : cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Product Cards Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+            {filteredProducts.map(product => {
+              const isLowStock = product.stock <= product.threshold;
+              const isOutStock = product.stock <= 0;
+
+              return (
+                <div
+                  key={product.id}
+                  onClick={() => !isOutStock && addToCart(product)}
+                  className={`neo-box rounded-xl p-3 flex flex-col justify-between cursor-pointer select-none transition-all ${
+                    isOutStock 
+                      ? 'bg-gray-200 opacity-60 cursor-not-allowed' 
+                      : `${product.color || 'bg-white'} hover:-translate-y-1`
+                  }`}
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl">{product.icon || '📦'}</span>
+                      <span className={`text-[10px] font-black px-1.5 py-0.5 rounded border border-black ${
+                        isOutStock 
+                          ? 'bg-black text-white' 
+                          : isLowStock 
+                            ? 'bg-[#FF5757] text-white animate-pulse' 
+                            : 'bg-white text-black'
+                      }`}>
+                        Stok: {product.stock}
+                      </span>
+                    </div>
+
+                    <h4 className="font-black text-sm line-clamp-2 leading-tight pt-1">{product.name}</h4>
+                    <p className="text-[10px] font-bold text-gray-700 uppercase tracking-wider">{product.sku}</p>
+                  </div>
+
+                  <div className="mt-3 pt-2 border-t-2 border-black flex items-center justify-between">
+                    <span className="font-black text-xs sm:text-sm">{formatRp(product.price)}</span>
+                    <button className="p-1 bg-black text-white rounded border border-black hover:bg-gray-800">
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {filteredProducts.length === 0 && (
+            <div className="neo-box bg-white p-8 text-center rounded-xl font-bold space-y-2">
+              <div className="text-3xl">🔍</div>
+              <div>Produk tidak ditemukan</div>
+              <p className="text-xs text-gray-500 font-normal">Coba ubah kata kunci atau kategori pencarian.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Right Side: Cart Summary & Quick Checkout Panel (5 Cols) */}
+        <div className="lg:col-span-5">
+          <div className="neo-box bg-white rounded-2xl p-4 sm:p-5 space-y-4 sticky top-20">
+            
+            <div className="flex items-center justify-between border-b-3 border-black pb-3">
+              <div className="flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5 text-black" />
+                <h3 className="font-black text-lg">Keranjang Belanja</h3>
+                <span className="bg-[#FFDE59] border border-black px-2 py-0.5 rounded text-xs font-bold">
+                  {cart.reduce((a, b) => a + b.quantity, 0)} Item
+                </span>
+              </div>
+              {cart.length > 0 && (
+                <button
+                  onClick={clearCart}
+                  className="text-xs font-bold text-[#FF5757] hover:underline flex items-center gap-1"
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> Bersihkan
+                </button>
+              )}
+            </div>
+
+            {/* Cart Items List */}
+            <div className="max-h-[320px] overflow-y-auto space-y-2 pr-1">
+              {cart.length === 0 ? (
+                <div className="py-12 text-center space-y-2 text-gray-400">
+                  <div className="text-4xl">🛒</div>
+                  <p className="text-xs font-bold text-gray-600">Keranjang masih kosong.</p>
+                  <p className="text-[11px]">Klik produk di sebelah kiri untuk menambahkan.</p>
+                </div>
+              ) : (
+                cart.map(item => (
+                  <div key={item.id} className="neo-box-sm bg-[#FFFDF5] p-2.5 rounded-lg flex items-center justify-between text-xs sm:text-sm font-bold">
+                    <div className="flex-1 pr-2">
+                      <div className="font-black line-clamp-1">{item.name}</div>
+                      <div className="text-gray-600 text-[11px]">{formatRp(item.price)} x {item.quantity} = {formatRp(item.price * item.quantity)}</div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        onClick={() => updateCartQuantity(item.id, -1)}
+                        className="w-6 h-6 bg-white border border-black rounded font-black flex items-center justify-center hover:bg-gray-200"
+                      >
+                        -
+                      </button>
+                      <span className="w-6 text-center font-black">{item.quantity}</span>
+                      <button
+                        onClick={() => updateCartQuantity(item.id, 1)}
+                        className="w-6 h-6 bg-white border border-black rounded font-black flex items-center justify-center hover:bg-gray-200"
+                      >
+                        +
+                      </button>
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        className="w-6 h-6 bg-[#FF5757] text-white border border-black rounded flex items-center justify-center ml-1"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Calculation & Adjustments */}
+            {cart.length > 0 && (
+              <div className="space-y-3 pt-3 border-t-3 border-black text-xs font-bold">
+                
+                {/* Discount & Tax Options */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wider text-gray-600 block mb-1">Diskon (%)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={discountPercent}
+                      onChange={(e) => setDiscountPercent(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))}
+                      className="neo-input w-full px-2 py-1.5 rounded-lg text-xs font-bold"
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wider text-gray-600 block mb-1">Pajak (PB1 {storeConfig.taxRate}%)</label>
+                    <button
+                      onClick={() => setTaxEnabled(!taxEnabled)}
+                      className={`w-full py-1.5 px-2 border-2 border-black rounded-lg text-xs font-bold transition-all ${
+                        taxEnabled ? 'bg-[#00F5D4] text-black' : 'bg-gray-200 text-gray-600'
+                      }`}
+                    >
+                      {taxEnabled ? `Aktif (+${formatRp(taxAmount)})` : 'Non-Aktif (0)'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Subtotal & Totals */}
+                <div className="space-y-1.5 pt-2 border-t border-gray-300">
+                  <div className="flex justify-between text-gray-600">
+                    <span>Subtotal:</span>
+                    <span>{formatRp(cartSubtotal)}</span>
+                  </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-[#FF5757]">
+                      <span>Diskon ({discountPercent}%):</span>
+                      <span>-{formatRp(discountAmount)}</span>
+                    </div>
+                  )}
+                  {taxEnabled && (
+                    <div className="flex justify-between text-gray-600">
+                      <span>Pajak ({storeConfig.taxRate}%):</span>
+                      <span>+{formatRp(taxAmount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center text-base sm:text-lg font-black pt-2 border-t-2 border-black">
+                    <span>TOTAL BAYAR:</span>
+                    <span className="text-xl bg-[#00E5FF] px-2 py-0.5 rounded border border-black">
+                      {formatRp(cartTotal)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Checkout Action Button */}
+                <NeoButton
+                  onClick={onOpenPayment}
+                  variant="yellow"
+                  className="w-full !py-3 !text-base mt-2"
+                >
+                  Bayar Sekarang ({formatRp(cartTotal)}) <ArrowRight className="w-5 h-5 ml-1" />
+                </NeoButton>
+              </div>
+            )}
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+function PaymentModal({
+  total,
+  subtotal,
+  taxAmount,
+  discountAmount,
+  selectedMethod,
+  setSelectedMethod,
+  cashGiven,
+  setCashGiven,
+  onClose,
+  onConfirmPayment
+}) {
+  const numCash = parseFloat(cashGiven) || 0;
+  const changeAmount = numCash - total;
+
+  const quickAmounts = [
+    total,
+    20000,
+    50000,
+    100000,
+    150000
+  ].filter((v, i, a) => v >= total && a.indexOf(v) === i);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="neo-box-lg bg-white rounded-2xl w-full max-w-lg p-5 sm:p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+        
+        <div className="flex items-center justify-between border-b-3 border-black pb-3">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-[#FFDE59] border border-black rounded-lg">
+              <CreditCard className="w-5 h-5 text-black" />
+            </div>
+            <h3 className="text-xl font-black">Proses Pembayaran</h3>
+          </div>
+          <button onClick={onClose} className="p-1 hover:bg-gray-200 rounded-lg">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Total Display Card */}
+        <div className="bg-[#00E5FF] border-3 border-black rounded-xl p-4 text-center space-y-1">
+          <span className="text-xs font-bold uppercase tracking-widest text-black/70">Total Yang Harus Dibayar</span>
+          <div className="text-3xl sm:text-4xl font-black">{formatRp(total)}</div>
+        </div>
+
+        {/* Payment Method Selector Tabs */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-wider text-gray-700 block">Metode Pembayaran</label>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { id: 'QRIS', label: 'QRIS / E-Wallet', icon: QrCode, color: 'bg-[#FFDE59]' },
+              { id: 'Cash', label: 'Tunai (Cash)', icon: Banknote, color: 'bg-[#00F5D4]' },
+              { id: 'Card', label: 'Kartu Debit', icon: CreditCard, color: 'bg-[#FF99C8]' }
+            ].map(m => {
+              const Icon = m.icon;
+              const isSelected = selectedMethod === m.id;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => setSelectedMethod(m.id)}
+                  className={`p-3 rounded-xl border-3 border-black font-bold text-xs flex flex-col items-center gap-2 transition-all ${
+                    isSelected ? `${m.color} shadow-[3px_3px_0px_0px_#000]` : 'bg-white hover:bg-gray-100'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span>{m.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Method Specific UI */}
+        {selectedMethod === 'Cash' && (
+          <div className="space-y-3 pt-2">
+            <div>
+              <label className="text-xs font-bold block mb-1">Uang Diterima (Rp)</label>
+              <input
+                type="number"
+                value={cashGiven}
+                onChange={(e) => setCashGiven(e.target.value)}
+                placeholder="Masukkan jumlah uang..."
+                className="neo-input w-full p-3 rounded-xl font-black text-lg bg-white"
+                autoFocus
+              />
+            </div>
+
+            {/* Quick Cash Buttons */}
+            <div className="flex flex-wrap gap-2">
+              {quickAmounts.map(amt => (
+                <button
+                  key={amt}
+                  onClick={() => setCashGiven(amt.toString())}
+                  className="px-3 py-1.5 bg-[#FFFDF5] border-2 border-black rounded-lg text-xs font-bold hover:bg-[#FFDE59]"
+                >
+                  {amt === total ? 'Uang Pas' : formatRp(amt)}
+                </button>
+              ))}
+            </div>
+
+            {numCash > 0 && (
+              <div className={`p-3 border-2 border-black rounded-xl text-sm font-bold flex justify-between items-center ${
+                changeAmount < 0 ? 'bg-[#FF5757] text-white' : 'bg-[#00F5D4] text-black'
+              }`}>
+                <span>{changeAmount < 0 ? 'Kurang:' : 'Kembalian:'}</span>
+                <span className="text-lg font-black">{formatRp(Math.abs(changeAmount))}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {selectedMethod === 'QRIS' && (
+          <div className="text-center space-y-3 p-4 bg-[#FFFDF5] border-2 border-black rounded-xl">
+            <div className="inline-block p-3 bg-white border-3 border-black rounded-xl">
+              {/* Dummy QRIS Visual */}
+              <div className="w-36 h-36 bg-gray-900 rounded flex items-center justify-center text-white relative overflow-hidden">
+                <div className="grid grid-cols-4 gap-1 p-2 w-full h-full opacity-80">
+                  {Array.from({ length: 16 }).map((_, i) => (
+                    <div key={i} className={`rounded ${i % 2 === 0 ? 'bg-white' : 'bg-transparent'}`}></div>
+                  ))}
+                </div>
+                <span className="absolute bg-[#FFDE59] text-black border border-black font-black text-[10px] px-2 py-0.5 rounded">
+                  QRIS KASIRKITA
+                </span>
+              </div>
+            </div>
+            <p className="text-xs font-bold text-gray-700">
+              Scan dengan GoPay, OVO, ShopeePay, Dana, atau Mobile Banking
+            </p>
+          </div>
+        )}
+
+        {selectedMethod === 'Card' && (
+          <div className="p-4 bg-[#FFFDF5] border-2 border-black rounded-xl text-center space-y-2">
+            <CreditCard className="w-10 h-10 mx-auto text-black" />
+            <p className="text-xs font-bold">Silahkan gesek atau tap kartu pada mesin EDC Kasir.</p>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex items-center gap-3 pt-3 border-t-2 border-black">
+          <NeoButton onClick={onClose} variant="white" className="flex-1">
+            Batal
+          </NeoButton>
+          <NeoButton
+            onClick={onConfirmPayment}
+            variant="yellow"
+            className="flex-1"
+            disabled={selectedMethod === 'Cash' && numCash < total}
+          >
+            Konfirmasi Lunas <Check className="w-5 h-5 ml-1" />
+          </NeoButton>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+function ReceiptModal({ transaction, storeConfig, onClose, showToast }) {
+  const receiptRef = useRef(null);
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleShareWA = () => {
+    const text = `*STRUK PEMBAYARAN ${storeConfig.name.toUpperCase()}*\nNo: ${transaction.id}\nTanggal: ${formatDate(transaction.date)}\nTotal: ${formatRp(transaction.total)}\nTerima kasih telah berbelanja!`;
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="neo-box-lg bg-white rounded-2xl w-full max-w-md p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+        
+        <div className="flex items-center justify-between border-b-3 border-black pb-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-6 h-6 text-[#00F5D4]" />
+            <h3 className="text-xl font-black">Transaksi Sukses!</h3>
+          </div>
+          <button onClick={onClose} className="p-1 hover:bg-gray-200 rounded-lg">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Thermal Receipt Box Visual */}
+        <div ref={receiptRef} className="neo-box bg-[#FFFDF5] p-5 rounded-xl text-xs font-mono space-y-3 border-2 border-black select-text">
+          
+          <div className="text-center space-y-1 pb-3 border-b-2 border-dashed border-black">
+            <h4 className="font-black text-base">{storeConfig.name}</h4>
+            <p className="text-[10px] text-gray-600">{storeConfig.address}</p>
+            <p className="text-[10px] text-gray-600">Telp: {storeConfig.phone}</p>
+          </div>
+
+          <div className="space-y-1 text-[11px] pb-2 border-b-2 border-dashed border-black">
+            <div className="flex justify-between">
+              <span>No Struk:</span>
+              <span className="font-bold">{transaction.id}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Waktu:</span>
+              <span>{formatDate(transaction.date)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Kasir:</span>
+              <span>{transaction.cashier}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Metode:</span>
+              <span className="font-bold">{transaction.paymentMethod}</span>
+            </div>
+          </div>
+
+          {/* Items Table */}
+          <div className="space-y-1.5 py-1 border-b-2 border-dashed border-black">
+            {transaction.items.map((item, idx) => (
+              <div key={idx} className="space-y-0.5">
+                <div className="font-bold text-xs">{item.name}</div>
+                <div className="flex justify-between text-[11px] text-gray-700">
+                  <span>{item.quantity} x {formatRp(item.price)}</span>
+                  <span className="font-bold">{formatRp(item.quantity * item.price)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Totals Breakdown */}
+          <div className="space-y-1 text-[11px] pt-1">
+            <div className="flex justify-between">
+              <span>Subtotal:</span>
+              <span>{formatRp(transaction.subtotal)}</span>
+            </div>
+            {transaction.discount > 0 && (
+              <div className="flex justify-between text-[#FF5757]">
+                <span>Diskon:</span>
+                <span>-{formatRp(transaction.discount)}</span>
+              </div>
+            )}
+            {transaction.tax > 0 && (
+              <div className="flex justify-between">
+                <span>Pajak (PB1):</span>
+                <span>+{formatRp(transaction.tax)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm font-black pt-1 border-t-2 border-black">
+              <span>TOTAL:</span>
+              <span>{formatRp(transaction.total)}</span>
+            </div>
+            {transaction.paymentMethod === 'Cash' && (
+              <>
+                <div className="flex justify-between">
+                  <span>Tunai Diterima:</span>
+                  <span>{formatRp(transaction.cashGiven)}</span>
+                </div>
+                <div className="flex justify-between font-bold">
+                  <span>Kembalian:</span>
+                  <span>{formatRp(transaction.change)}</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="text-center pt-3 border-t-2 border-dashed border-black text-[10px] text-gray-600 font-bold">
+            <p>{storeConfig.receiptFooter}</p>
+            <p className="text-[9px] mt-1 text-black">Powered by KasirKita POS</p>
+          </div>
+
+        </div>
+
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-2">
+          <NeoButton onClick={handlePrint} variant="cyan" className="!text-xs">
+            <Printer className="w-4 h-4" /> Cetak Struk
+          </NeoButton>
+          <NeoButton onClick={handleShareWA} variant="mint" className="!text-xs">
+            <Share2 className="w-4 h-4" /> Kirim WhatsApp
+          </NeoButton>
+        </div>
+
+        <NeoButton onClick={onClose} variant="black" className="w-full">
+          Selesai & Transaksi Baru
+        </NeoButton>
+
+      </div>
+    </div>
+  );
+}
+
+function ProductManagementView({ products, setProducts, showToast }) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [search, setSearch] = useState('');
+
+  // Form State
+  const [formData, setFormData] = useState({
+    name: '',
+    category: 'Beverages',
+    price: '',
+    cost: '',
+    stock: '',
+    threshold: 5,
+    sku: '',
+    icon: '📦',
+    color: 'bg-[#FFDE59]'
+  });
+
+  const handleOpenAdd = () => {
+    setEditingProduct(null);
+    setFormData({
+      name: '',
+      category: 'Beverages',
+      price: '',
+      cost: '',
+      stock: '',
+      threshold: 5,
+      sku: `PROD-${Math.floor(100 + Math.random() * 900)}`,
+      icon: '☕',
+      color: 'bg-[#FFDE59]'
+    });
+    setModalOpen(true);
+  };
+
+  const handleOpenEdit = (prod) => {
+    setEditingProduct(prod);
+    setFormData({ ...prod });
+    setModalOpen(true);
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm('Yakin ingin menghapus produk ini dari katalog?')) {
+      setProducts(prev => prev.filter(p => p.id !== id));
+      showToast('Produk berhasil dihapus!', 'info');
+    }
+  };
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.price || !formData.stock) {
+      showToast('Harap isi semua kolom wajib!', 'error');
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      price: parseFloat(formData.price) || 0,
+      cost: parseFloat(formData.cost) || 0,
+      stock: parseInt(formData.stock) || 0,
+      threshold: parseInt(formData.threshold) || 5
+    };
+
+    if (editingProduct) {
+      setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...payload, id: editingProduct.id } : p));
+      showToast('Produk berhasil diperbarui!', 'success');
+    } else {
+      setProducts(prev => [{ ...payload, id: Date.now().toString() }, ...prev]);
+      showToast('Produk baru ditambahkan!', 'success');
+    }
+
+    setModalOpen(false);
+  };
+
+  const filtered = products.filter(p =>
+    p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      
+      {/* Header & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <NeoBadge text="Master Data" color="bg-[#00E5FF]" />
+          <h2 className="text-2xl sm:text-3xl font-black mt-1">Katalog Produk</h2>
+          <p className="text-xs font-bold text-gray-600">Kelola daftar menu, harga jual, dan stok awal barang.</p>
+        </div>
+
+        <NeoButton onClick={handleOpenAdd} variant="yellow">
+          <Plus className="w-5 h-5" /> Tambah Produk Baru
+        </NeoButton>
+      </div>
+
+      {/* Filter Bar */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1">
+          <Search className="w-5 h-5 absolute left-3 top-3 text-gray-500" />
+          <input
+            type="text"
+            placeholder="Cari berdasarkan nama produk atau SKU..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="neo-input w-full pl-10 pr-4 py-2.5 rounded-xl font-bold text-sm bg-white"
+          />
+        </div>
+      </div>
+
+      {/* Products Table */}
+      <div className="neo-box bg-white rounded-2xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead>
+              <tr className="bg-[#FFDE59] border-b-3 border-black text-black font-black uppercase text-[11px] tracking-wider">
+                <th className="p-3.5">Produk</th>
+                <th className="p-3.5">SKU</th>
+                <th className="p-3.5">Kategori</th>
+                <th className="p-3.5">Harga Jual</th>
+                <th className="p-3.5">Modal</th>
+                <th className="p-3.5">Stok</th>
+                <th className="p-3.5 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y-2 divide-black font-bold">
+              {filtered.map(product => (
+                <tr key={product.id} className="hover:bg-[#FFFDF5]">
+                  <td className="p-3.5 flex items-center gap-2">
+                    <span className="text-2xl p-1 bg-gray-100 rounded border border-black">{product.icon}</span>
+                    <span className="font-black">{product.name}</span>
+                  </td>
+                  <td className="p-3.5 uppercase text-gray-600 font-mono">{product.sku}</td>
+                  <td className="p-3.5">
+                    <span className="px-2 py-0.5 rounded border border-black text-[10px] uppercase font-bold bg-[#FFFDF5]">
+                      {product.category}
+                    </span>
+                  </td>
+                  <td className="p-3.5 font-black text-[#00E5FF] drop-shadow-[1px_1px_0px_#000]">{formatRp(product.price)}</td>
+                  <td className="p-3.5 text-gray-600">{formatRp(product.cost)}</td>
+                  <td className="p-3.5">
+                    <span className={`px-2 py-0.5 rounded border border-black text-xs font-black ${
+                      product.stock <= product.threshold ? 'bg-[#FF5757] text-white' : 'bg-[#00F5D4] text-black'
+                    }`}>
+                      {product.stock} unit
+                    </span>
+                  </td>
+                  <td className="p-3.5">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => handleOpenEdit(product)}
+                        className="p-1.5 bg-[#FFDE59] border border-black rounded hover:bg-yellow-400"
+                        title="Edit"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        className="p-1.5 bg-[#FF5757] text-white border border-black rounded hover:bg-red-600"
+                        title="Hapus"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Add / Edit Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="neo-box-lg bg-white rounded-2xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            
+            <div className="flex items-center justify-between border-b-3 border-black pb-3">
+              <h3 className="text-xl font-black">{editingProduct ? 'Edit Produk' : 'Tambah Produk Baru'}</h3>
+              <button onClick={() => setModalOpen(false)} className="p-1 hover:bg-gray-200 rounded">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSave} className="space-y-3 text-xs font-bold">
+              <div>
+                <label className="block mb-1">Nama Produk *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="neo-input w-full p-2.5 rounded-lg"
+                  placeholder="Contoh: Kopi Aren Special"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block mb-1">Kategori</label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="neo-input w-full p-2.5 rounded-lg bg-white"
+                  >
+                    <option value="Beverages">Beverages</option>
+                    <option value="Main Dish">Main Dish</option>
+                    <option value="Snacks">Snacks</option>
+                    <option value="Bundles">Bundles</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block mb-1">SKU Barcode</label>
+                  <input
+                    type="text"
+                    value={formData.sku}
+                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                    className="neo-input w-full p-2.5 rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block mb-1">Harga Jual (Rp) *</label>
+                  <input
+                    type="number"
+                    required
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    className="neo-input w-full p-2.5 rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-1">Harga Modal (Rp)</label>
+                  <input
+                    type="number"
+                    value={formData.cost}
+                    onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
+                    className="neo-input w-full p-2.5 rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block mb-1">Stok Awal *</label>
+                  <input
+                    type="number"
+                    required
+                    value={formData.stock}
+                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                    className="neo-input w-full p-2.5 rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-1">Batas Alert Stok Menipis</label>
+                  <input
+                    type="number"
+                    value={formData.threshold}
+                    onChange={(e) => setFormData({ ...formData, threshold: e.target.value })}
+                    className="neo-input w-full p-2.5 rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block mb-1">Emoji Icon Produk</label>
+                <div className="flex gap-2">
+                  {['☕', '🍞', '🍳', '🥤', '🍜', '🥟', '🍟', '🎁'].map(icon => (
+                    <button
+                      key={icon}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, icon })}
+                      className={`p-2 border-2 border-black rounded text-lg ${formData.icon === icon ? 'bg-[#FFDE59]' : 'bg-white'}`}
+                    >
+                      {icon}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-3 flex gap-2">
+                <NeoButton onClick={() => setModalOpen(false)} variant="white" className="flex-1">
+                  Batal
+                </NeoButton>
+                <NeoButton type="submit" variant="yellow" className="flex-1">
+                  Simpan Produk
+                </NeoButton>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+function InventoryManagementView({ products, setProducts, stockLogs, setStockLogs, showToast }) {
+  const [restockModalOpen, setRestockModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [restockQty, setRestockQty] = useState(10);
+  const [adjustmentReason, setAdjustmentReason] = useState('Restock Suplier');
+
+  const openRestock = (prod) => {
+    setSelectedProduct(prod);
+    setRestockQty(10);
+    setRestockModalOpen(true);
+  };
+
+  const handleConfirmRestock = () => {
+    if (!selectedProduct) return;
+
+    const qtyNum = parseInt(restockQty) || 0;
+    
+    setProducts(prev => prev.map(p => {
+      if (p.id === selectedProduct.id) {
+        return { ...p, stock: p.stock + qtyNum };
+      }
+      return p;
+    }));
+
+    setStockLogs(prev => [
+      {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        productName: selectedProduct.name,
+        change: qtyNum,
+        reason: adjustmentReason
+      },
+      ...prev
+    ]);
+
+    showToast(`Stok ${selectedProduct.name} berhasil diperbarui!`, 'success');
+    setRestockModalOpen(false);
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      
+      <div>
+        <NeoBadge text="Manajemen Gudang" color="bg-[#FF99C8]" />
+        <h2 className="text-2xl sm:text-3xl font-black mt-1">Stok & Gudang Real-time</h2>
+        <p className="text-xs font-bold text-gray-600">Pantau pergerakan stok, warning barang menipis, dan lakukan restock instan.</p>
+      </div>
+
+      {/* Low Stock Alert Header Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <NeoCard bg="bg-[#FFDE59]">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-black text-white rounded-xl">
+              <AlertTriangle className="w-6 h-6 text-[#FFDE59]" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black">Item Perlu Restock</h3>
+              <p className="text-xs font-bold text-black/80">
+                {products.filter(p => p.stock <= p.threshold).length} Produk berada di bawah ambang batas minimal.
+              </p>
+            </div>
+          </div>
+        </NeoCard>
+
+        <NeoCard bg="bg-[#00F5D4]">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-black text-white rounded-xl">
+              <Boxes className="w-6 h-6 text-[#00F5D4]" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black">Total Item Produk</h3>
+              <p className="text-xs font-bold text-black/80">
+                {products.reduce((acc, p) => acc + p.stock, 0)} Total unit barang siap jual.
+              </p>
+            </div>
+          </div>
+        </NeoCard>
+      </div>
+
+      {/* Stock Overview Table */}
+      <div className="neo-box bg-white rounded-2xl overflow-hidden">
+        <div className="p-4 bg-[#FFFDF5] border-b-3 border-black font-black text-base flex justify-between items-center">
+          <span>Status Persediaan Barang</span>
+          <span className="text-xs text-gray-600">Real-time sync</span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead>
+              <tr className="bg-black text-white uppercase text-[11px] tracking-wider font-black">
+                <th className="p-3.5">Nama Produk</th>
+                <th className="p-3.5">SKU</th>
+                <th className="p-3.5">Stok Saat Ini</th>
+                <th className="p-3.5">Batas Minimal</th>
+                <th className="p-3.5">Status</th>
+                <th className="p-3.5 text-center">Tindakan Cepat</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y-2 divide-black font-bold">
+              {products.map(prod => {
+                const isLow = prod.stock <= prod.threshold;
+                return (
+                  <tr key={prod.id} className={isLow ? 'bg-[#FF5757]/10' : ''}>
+                    <td className="p-3.5 font-black flex items-center gap-2">
+                      <span>{prod.icon}</span> {prod.name}
+                    </td>
+                    <td className="p-3.5 uppercase font-mono text-gray-600">{prod.sku}</td>
+                    <td className="p-3.5 text-base font-black">{prod.stock} unit</td>
+                    <td className="p-3.5 text-gray-600">{prod.threshold} unit</td>
+                    <td className="p-3.5">
+                      {isLow ? (
+                        <span className="px-2 py-0.5 bg-[#FF5757] text-white border border-black rounded text-[10px] font-black uppercase">
+                          ⚠️ Stok Menipis
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 bg-[#00F5D4] text-black border border-black rounded text-[10px] font-black uppercase">
+                          Aman
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-3.5 text-center">
+                      <NeoButton onClick={() => openRestock(prod)} variant="yellow" className="!py-1 !px-3 !text-xs mx-auto">
+                        + Restock Stok
+                      </NeoButton>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Stock Logs Table */}
+      <div className="neo-box bg-white rounded-2xl p-5 space-y-3">
+        <h3 className="font-black text-lg border-b-2 border-black pb-2">Riwayat Pergerakan Stok</h3>
+        <div className="space-y-2 max-h-60 overflow-y-auto">
+          {stockLogs.map((log) => (
+            <div key={log.id} className="p-2.5 bg-[#FFFDF5] border-2 border-black rounded-lg flex justify-between items-center text-xs font-bold">
+              <div>
+                <span className="font-black">{log.productName}</span>
+                <span className="text-gray-500 text-[10px] block">{formatDate(log.date)} • {log.reason}</span>
+              </div>
+              <span className={`px-2 py-1 rounded border border-black font-black text-xs ${
+                log.change > 0 ? 'bg-[#00F5D4]' : 'bg-[#FF99C8]'
+              }`}>
+                {log.change > 0 ? `+${log.change}` : log.change}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Restock Adjustment Modal */}
+      {restockModalOpen && selectedProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="neo-box-lg bg-white rounded-2xl w-full max-w-md p-6 space-y-4">
+            
+            <div className="flex items-center justify-between border-b-3 border-black pb-3">
+              <h3 className="text-lg font-black">Restock {selectedProduct.name}</h3>
+              <button onClick={() => setRestockModalOpen(false)}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs font-bold">
+              <div className="bg-[#FFDE59] p-3 border-2 border-black rounded-lg">
+                Stok Saat Ini: <span className="font-black text-base">{selectedProduct.stock} unit</span>
+              </div>
+
+              <div>
+                <label className="block mb-1">Jumlah Perubahan Stok (+/-)</label>
+                <input
+                  type="number"
+                  value={restockQty}
+                  onChange={(e) => setRestockQty(e.target.value)}
+                  className="neo-input w-full p-2.5 rounded-lg text-lg font-black"
+                />
+              </div>
+
+              <div>
+                <label className="block mb-1">Catatan / Alasan</label>
+                <select
+                  value={adjustmentReason}
+                  onChange={(e) => setAdjustmentReason(e.target.value)}
+                  className="neo-input w-full p-2.5 rounded-lg bg-white"
+                >
+                  <option value="Restock Suplier">Restock Suplier Baru</option>
+
+                  <option value="Penyesuaian Stok Opnam">Penyesuaian Stok Opnam</option>
+                  <option value="Barang Rusak / Kadaluarsa">Barang Rusak / Kadaluarsa</option>
+                </select>
+              </div>
+
+              <div className="pt-2 flex gap-2">
+                <NeoButton onClick={() => setRestockModalOpen(false)} variant="white" className="flex-1">
+                  Batal
+                </NeoButton>
+                <NeoButton onClick={handleConfirmRestock} variant="yellow" className="flex-1">
+                  Simpan Perubahan
+                </NeoButton>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+function ReportsAnalyticsView({ transactions, products, storeConfig }) {
+  const [timePeriod, setTimePeriod] = useState('Today'); // 'Today' | 'Week' | 'Month'
+
+  // Calculate Metrics
+  const totalOmset = useMemo(() => {
+    return transactions.reduce((sum, t) => sum + t.total, 0);
+  }, [transactions]);
+
+  const totalTrxCount = transactions.length;
+
+  const averageBasket = totalTrxCount > 0 ? Math.round(totalOmset / totalTrxCount) : 0;
+
+  // Top Selling Items Breakdown
+  const topProductsMap = useMemo(() => {
+    const map = {};
+    transactions.forEach(t => {
+      t.items.forEach(item => {
+        if (!map[item.name]) map[item.name] = 0;
+        map[item.name] += item.quantity;
+      });
+    });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]);
+  }, [transactions]);
+
+  // Download Export Simulation
+  const handleExportCSV = () => {
+    const headers = ["ID Transaksi", "Waktu", "Metode", "Total"];
+    const rows = transactions.map(t => [t.id, t.date, t.paymentMethod, t.total]);
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Laporan_Penjualan_${storeConfig.name.replace(/\s+/g, '_')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      
+      {/* Header & Export */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <NeoBadge text="Laporan Analitik" color="bg-[#B8FF66]" />
+          <h2 className="text-2xl sm:text-3xl font-black mt-1">Laporan Bisnis & Omset</h2>
+          <p className="text-xs font-bold text-gray-600">Ringkasan performa penjualan harian dan statistik transaksi.</p>
+        </div>
+
+        <NeoButton onClick={handleExportCSV} variant="cyan">
+          <Download className="w-4 h-4" /> Export CSV Data
+        </NeoButton>
+      </div>
+
+      {/* Oversized Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        
+        <NeoCard bg="bg-[#FFDE59]">
+          <div className="space-y-1">
+            <span className="text-xs font-bold uppercase tracking-wider text-black/70">Total Omset Penjualan</span>
+            <div className="text-3xl sm:text-4xl font-black">{formatRp(totalOmset)}</div>
+            <div className="text-[11px] font-bold text-black/80 flex items-center gap-1 pt-1">
+              <TrendingUp className="w-4 h-4" /> +14.2% dari periode sebelumnya
+            </div>
+          </div>
+        </NeoCard>
+
+        <NeoCard bg="bg-[#00E5FF]">
+          <div className="space-y-1">
+            <span className="text-xs font-bold uppercase tracking-wider text-black/70">Total Transaksi</span>
+            <div className="text-3xl sm:text-4xl font-black">{totalTrxCount} Struk</div>
+            <div className="text-[11px] font-bold text-black/80 pt-1">
+              Rata-rata {averageBasket ? formatRp(averageBasket) : 'Rp 0'} / struk
+            </div>
+          </div>
+        </NeoCard>
+
+        <NeoCard bg="bg-[#FF99C8]">
+          <div className="space-y-1">
+            <span className="text-xs font-bold uppercase tracking-wider text-black/70">Produk Terlaris</span>
+            <div className="text-xl sm:text-2xl font-black line-clamp-1">
+              {topProductsMap.length > 0 ? topProductsMap[0][0] : 'Belum ada'}
+            </div>
+            <div className="text-[11px] font-bold text-black/80 pt-1">
+              Terjual {topProductsMap.length > 0 ? topProductsMap[0][1] : 0} porsi
+            </div>
+          </div>
+        </NeoCard>
+
+      </div>
+
+      {/* Brutalist Sales Trend Chart Visual */}
+      <div className="neo-box bg-white rounded-2xl p-5 space-y-4">
+        <div className="flex justify-between items-center border-b-2 border-black pb-3">
+          <h3 className="font-black text-lg">Grafik Omset Harian (Neo-Bar Chart)</h3>
+          <div className="flex gap-1 text-xs font-bold">
+            {['Today', 'Week', 'Month'].map(p => (
+              <button
+                key={p}
+                onClick={() => setTimePeriod(p)}
+                className={`px-3 py-1 rounded border border-black ${timePeriod === p ? 'bg-black text-white' : 'bg-gray-100'}`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Custom Visual HTML Bar Chart */}
+        <div className="h-48 pt-6 flex items-end gap-3 sm:gap-6 border-b-3 border-black px-2 pb-1">
+          {[
+            { day: 'Sen', amount: 120000, color: 'bg-[#FFDE59]' },
+            { day: 'Sel', amount: 240000, color: 'bg-[#00E5FF]' },
+            { day: 'Rab', amount: 180000, color: 'bg-[#FF99C8]' },
+            { day: 'Kam', amount: 310000, color: 'bg-[#00F5D4]' },
+            { day: 'Jum', amount: 450000, color: 'bg-[#B8FF66]' },
+            { day: 'Sab', amount: 520000, color: 'bg-[#FFDE59]' },
+            { day: 'Min', amount: totalOmset || 280000, color: 'bg-[#FF5757]' },
+          ].map((bar, idx) => {
+            const heightPercent = Math.min(100, Math.max(15, (bar.amount / 600000) * 100));
+            return (
+              <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+                <span className="opacity-0 group-hover:opacity-100 text-[10px] font-black bg-black text-white px-1 rounded transition-opacity">
+                  {formatRp(bar.amount)}
+                </span>
+                <div
+                  style={{ height: `${heightPercent}%` }}
+                  className={`w-full ${bar.color} border-2 border-black rounded-t-lg transition-all hover:brightness-110 shadow-[2px_0px_0px_0px_#000]`}
+                ></div>
+                <span className="text-[11px] font-black">{bar.day}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Transaction Log Table */}
+      <div className="neo-box bg-white rounded-2xl overflow-hidden">
+        <div className="p-4 bg-[#FFDE59] border-b-3 border-black font-black text-base">
+          Riwayat Transaksi Penjualan
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead>
+              <tr className="bg-black text-white uppercase text-[11px] tracking-wider font-black">
+                <th className="p-3">ID Struk</th>
+                <th className="p-3">Waktu</th>
+                <th className="p-3">Item Dibeli</th>
+                <th className="p-3">Metode</th>
+                <th className="p-3">Kasir</th>
+                <th className="p-3 text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y-2 divide-black font-bold">
+              {transactions.map(trx => (
+                <tr key={trx.id} className="hover:bg-[#FFFDF5]">
+                  <td className="p-3 font-mono font-black">{trx.id}</td>
+                  <td className="p-3 text-gray-600">{formatDate(trx.date)}</td>
+                  <td className="p-3">
+                    {trx.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}
+                  </td>
+                  <td className="p-3">
+                    <span className="px-2 py-0.5 bg-gray-100 border border-black rounded text-[10px]">
+                      {trx.paymentMethod}
+                    </span>
+                  </td>
+                  <td className="p-3 text-gray-700">{trx.cashier}</td>
+                  <td className="p-3 text-right font-black text-base">{formatRp(trx.total)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+function SettingsView({ storeConfig, setStoreConfig, user, setUser, showToast }) {
+  const [form, setForm] = useState({ ...storeConfig });
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    setStoreConfig(form);
+    showToast('Pengaturan Toko Berhasil Disimpan!', 'success');
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <div>
+        <NeoBadge text="Pengaturan Toko" color="bg-[#D8B4F8]" />
+        <h2 className="text-2xl sm:text-3xl font-black mt-1">Konfigurasi KasirKita</h2>
+        <p className="text-xs font-bold text-gray-600">Ubah identitas toko yang akan tercetak pada struk fisik & nota WhatsApp.</p>
+      </div>
+
+      <NeoCard bg="bg-white">
+        <form onSubmit={handleSave} className="space-y-4 text-xs font-bold">
+          <div>
+            <label className="block mb-1">Nama Toko / Usaha *</label>
+            <input
+              type="text"
+              required
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className="neo-input w-full p-2.5 rounded-lg text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1">Alamat Lengkap</label>
+            <textarea
+              rows={2}
+              value={form.address}
+              onChange={(e) => setForm({ ...form, address: e.target.value })}
+              className="neo-input w-full p-2.5 rounded-lg text-sm"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block mb-1">No. WhatsApp Toko</label>
+              <input
+                type="text"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                className="neo-input w-full p-2.5 rounded-lg text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1">Tarif Pajak PB1 (%)</label>
+              <input
+                type="number"
+                value={form.taxRate}
+                onChange={(e) => setForm({ ...form, taxRate: parseFloat(e.target.value) || 0 })}
+                className="neo-input w-full p-2.5 rounded-lg text-sm"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block mb-1">Pesan Catatan Kaki Struk (Receipt Footer)</label>
+            <input
+              type="text"
+              value={form.receiptFooter}
+              onChange={(e) => setForm({ ...form, receiptFooter: e.target.value })}
+              className="neo-input w-full p-2.5 rounded-lg text-sm"
+            />
+          </div>
+
+          <div className="pt-2">
+            <NeoButton type="submit" variant="yellow" className="!px-6">
+              Simpan Perubahan
+            </NeoButton>
+          </div>
+        </form>
+      </NeoCard>
+    </div>
+  );
+}
+
+function AuthModal({ mode, setMode, onClose, onLoginSuccess }) {
+  const [email, setEmail] = useState('pemilik@kedaikita.com');
+  const [password, setPassword] = useState('password123');
+  const [name, setName] = useState('Budi Santoso');
+  const [storeName, setStoreName] = useState('Kedai Kopi Kita');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onLoginSuccess({
+      name: mode === 'login' ? 'Budi Santoso' : name,
+      storeName: mode === 'login' ? 'Kedai Kopi Kita' : storeName,
+      email
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+      <div className="neo-box-lg bg-white rounded-2xl w-full max-w-md p-6 space-y-5">
+        
+        <div className="flex items-center justify-between border-b-3 border-black pb-3">
+          <h3 className="text-2xl font-black">
+            {mode === 'login' ? 'Masuk ke KasirKita' : 'Daftar Akun Baru'}
+          </h3>
+          <button onClick={onClose} className="p-1 hover:bg-gray-200 rounded">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3 text-xs font-bold">
+          
+          {mode === 'signup' && (
+            <>
+              <div>
+                <label className="block mb-1">Nama Pemilik *</label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="neo-input w-full p-2.5 rounded-lg"
+                  placeholder="Nama Lengkap"
+                />
+              </div>
+
+              <div>
+                <label className="block mb-1">Nama Toko / Usaha *</label>
+                <input
+                  type="text"
+                  required
+                  value={storeName}
+                  onChange={(e) => setStoreName(e.target.value)}
+                  className="neo-input w-full p-2.5 rounded-lg"
+                  placeholder="Contoh: Toko Maju Jaya"
+                />
+              </div>
+            </>
+          )}
+
+          <div>
+            <label className="block mb-1">Alamat Email *</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="neo-input w-full p-2.5 rounded-lg"
+              placeholder="email@bisnis.com"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1">Kata Sandi *</label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="neo-input w-full p-2.5 rounded-lg"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <NeoButton type="submit" variant="yellow" className="w-full !py-3 !text-sm mt-2">
+            {mode === 'login' ? 'Masuk Instan Demo 🚀' : 'Buat Akun Gratis'}
+          </NeoButton>
+        </form>
+
+        <div className="text-center text-xs font-bold pt-2 border-t-2 border-black">
+          {mode === 'login' ? (
+            <p>
+              Belum punya akun?{' '}
+              <span className="underline cursor-pointer text-[#FF5757]" onClick={() => setMode('signup')}>
+                Daftar sekarang
+              </span>
+            </p>
+          ) : (
+            <p>
+              Sudah punya akun?{' '}
+              <span className="underline cursor-pointer text-[#FF5757]" onClick={() => setMode('login')}>
+                Masuk di sini
+              </span>
+            </p>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+}
